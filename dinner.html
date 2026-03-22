@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What's for Dinner?</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --card:      #ffffff;
+  --text:      #1a0a2e;
+  --muted:     #6b5f82;
+  --border:    #ddd0f0;
+  --primary:   #7c3aed;
+  --primary-h: #6d28d9;
+  --green:     #059669;
+  --green-bg:  #d1fae5;
+  --green-dk:  #047857;
+  --blue:      #0369a1;
+  --blue-bg:   #dbeafe;
+  --purple:    #7c3aed;
+  --purple-bg: #ede9fe;
+  --pink:      #db2777;
+  --pink-bg:   #fce7f3;
+  --amber:     #b45309;
+  --amber-bg:  #fef3c7;
+  --shadow:    0 4px 24px rgba(124,58,237,0.13);
+  --radius:    14px;
+}
+
+@keyframes gradshift {
+  0%   { background-position: 0% 50%;   }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%;   }
+}
+@keyframes spin       { to { transform: rotate(360deg); } }
+@keyframes popIn      { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes slideUp    { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: linear-gradient(145deg, #fdf4ff 0%, #eff6ff 45%, #f0fdf4 100%);
+  background-attachment: fixed;
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header & Nav ─────────────────────────────────────── */
+header {
+  background: linear-gradient(135deg, #6d28d9 0%, #a855f7 40%, #ec4899 75%, #f97316 100%);
+  background-size: 300% 300%;
+  animation: gradshift 8s ease infinite;
+  padding: 18px 24px 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 4px 20px rgba(109,40,217,0.35);
+}
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 14px;
+}
+header h1 {
+  font-size: 1.55rem;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+header h1 span { font-size: 1.7rem; }
+nav { display: flex; gap: 4px; }
+.nav-btn {
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: rgba(255,255,255,0.75);
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 9px 20px;
+  border-radius: 10px 10px 0 0;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.nav-btn:hover { background: rgba(255,255,255,0.25); color: #fff; }
+.nav-btn.active {
+  background: #fff;
+  color: var(--primary);
+}
+
+/* ── Main ────────────────────────────────────────────── */
+main { flex: 1; max-width: 700px; width: 100%; margin: 0 auto; padding: 32px 16px 60px; }
+
+.view { display: none; }
+.view.active { display: block; animation: slideUp 0.25s ease; }
+
+/* ── Section titles ──────────────────────────────────── */
+.view-title {
+  font-size: 1.6rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #7c3aed, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 4px;
+}
+.view-sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 24px; }
+
+/* ── Card ────────────────────────────────────────────── */
+.card {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 26px;
+  box-shadow: var(--shadow);
+}
+
+/* ── Form ────────────────────────────────────────────── */
+.form-group {
+  margin-bottom: 22px;
+  padding: 16px 18px;
+  background: #fafafe;
+  border-radius: 10px;
+  border-left: 4px solid var(--primary);
+}
+.form-group:nth-child(2) { border-left-color: #10b981; }
+.form-group:nth-child(3) { border-left-color: #3b82f6; }
+.form-group:nth-child(4) { border-left-color: #ec4899; }
+.form-group:nth-child(5) { border-left-color: #f97316; }
+
+label.field-label {
+  display: block;
+  font-weight: 800;
+  font-size: 0.88rem;
+  color: var(--text);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+input[type="text"] {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  font-size: 1rem;
+  background: #fff;
+  color: var(--text);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+}
+input[type="text"]:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.12);
+}
+
+/* Toggle group (pill buttons) */
+.toggle-group { display: flex; flex-wrap: wrap; gap: 8px; }
+.toggle-group input[type="radio"],
+.toggle-group input[type="checkbox"] { display: none; }
+.toggle-group label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 2px solid #e2d9f3;
+  background: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.18s;
+  user-select: none;
+}
+.toggle-group label:hover { border-color: var(--primary); color: var(--primary); background: #f5f0ff; }
+.toggle-group input:checked + label {
+  border-color: var(--primary);
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(124,58,237,0.3);
+}
+
+/* Buttons */
+.btn-primary {
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  color: white;
+  border: none;
+  padding: 13px 28px;
+  font-size: 1rem;
+  font-weight: 800;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
+  width: 100%;
+  box-shadow: 0 4px 14px rgba(124,58,237,0.35);
+}
+.btn-primary:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(124,58,237,0.4); }
+.btn-primary:active { transform: translateY(0); }
+.btn-primary:disabled { background: #c4b5e8; box-shadow: none; cursor: not-allowed; transform: none; }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--primary);
+  border: 2px solid var(--primary);
+  padding: 11px 24px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-secondary:hover { background: #f5f0ff; }
+.btn-ghost {
+  background: #f5f0ff;
+  color: var(--primary);
+  border: 2px solid #ddd0f0;
+  padding: 7px 14px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-ghost:hover { background: #ede9fe; border-color: var(--primary); }
+.btn-danger {
+  background: #fff1f2;
+  color: #e11d48;
+  border: 2px solid #fecdd3;
+  padding: 7px 14px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-danger:hover { background: #ffe4e6; border-color: #e11d48; }
+
+.success-toast {
+  display: none;
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  color: #065f46;
+  border: 2px solid #6ee7b7;
+  border-radius: 10px;
+  padding: 13px 16px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-top: 14px;
+  text-align: center;
+  animation: popIn 0.2s ease;
+}
+
+/* ── Setup banner ────────────────────────────────────── */
+#setupBanner {
+  display: none;
+  background: linear-gradient(135deg, #fffbeb, #fef3c7);
+  border: 2px solid #fcd34d;
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 24px;
+}
+#setupBanner h3 { font-size: 1rem; color: #92400e; margin-bottom: 8px; }
+#setupBanner ol { margin-left: 18px; color: #78350f; font-size: 0.88rem; line-height: 1.9; }
+#setupBanner code {
+  background: #fef9c3;
+  border: 1px solid #fcd34d;
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.85em;
+}
+#setupBanner a { color: #b45309; }
+
+/* ── Picker view ─────────────────────────────────────── */
+.filter-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 26px;
+}
+@media (max-width: 480px) { .filter-grid { grid-template-columns: 1fr; } }
+
+.filter-block {
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  box-shadow: 0 2px 12px rgba(124,58,237,0.07);
+}
+.filter-block:nth-child(1) { border-top: 4px solid #3b82f6; }
+.filter-block:nth-child(2) { border-top: 4px solid #10b981; }
+.filter-block:nth-child(3) { border-top: 4px solid #ec4899; }
+.filter-block:nth-child(4) { border-top: 4px solid #f97316; }
+.filter-block .field-label {
+  margin-bottom: 10px;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--muted);
+  font-weight: 800;
+}
+.filter-block .toggle-group label { padding: 6px 12px; font-size: 0.8rem; }
+
+.pick-btn-row { display: flex; justify-content: center; margin-bottom: 28px; }
+.btn-pick {
+  background: linear-gradient(135deg, #f97316, #ec4899, #8b5cf6, #3b82f6);
+  background-size: 300% 300%;
+  animation: gradshift 4s ease infinite;
+  color: white;
+  border: none;
+  padding: 16px 48px;
+  font-size: 1.2rem;
+  font-weight: 900;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  letter-spacing: 0.5px;
+  box-shadow: 0 6px 24px rgba(139,92,246,0.4);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+.btn-pick:hover { transform: scale(1.05); box-shadow: 0 8px 30px rgba(139,92,246,0.5); }
+.btn-pick:active { transform: scale(0.97); }
+
+/* Result card */
+#resultCard { display: none; }
+.result-name {
+  font-size: 1.8rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #7c3aed, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 14px;
+  line-height: 1.2;
+}
+.badge-row { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 24px; }
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.badge-green  { background: var(--green-bg);  color: #065f46; }
+.badge-blue   { background: var(--blue-bg);   color: #1e40af; }
+.badge-purple { background: var(--purple-bg); color: #5b21b6; }
+.badge-amber  { background: var(--amber-bg);  color: #92400e; }
+
+.result-actions { display: flex; gap: 12px; }
+.btn-accept {
+  flex: 1;
+  background: linear-gradient(135deg, #059669, #10b981);
+  color: white;
+  border: none;
+  padding: 14px;
+  font-size: 1rem;
+  font-weight: 800;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  box-shadow: 0 4px 14px rgba(5,150,105,0.3);
+}
+.btn-accept:hover { opacity: 0.9; transform: translateY(-1px); }
+.btn-another {
+  flex: 1;
+  background: linear-gradient(135deg, #f5f0ff, #fce7f3);
+  color: var(--primary);
+  border: 2px solid #ddd0f0;
+  padding: 13px;
+  font-size: 1rem;
+  font-weight: 800;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-another:hover { background: linear-gradient(135deg, #ede9fe, #fce7f3); border-color: var(--primary); }
+
+.accepted-banner {
+  display: none;
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  border: 2px solid #6ee7b7;
+  border-radius: var(--radius);
+  padding: 22px;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #065f46;
+  animation: popIn 0.25s ease;
+}
+.accepted-name { font-size: 1.4rem; display: block; margin-top: 6px; color: #047857; }
+
+.no-match {
+  display: none;
+  text-align: center;
+  padding: 32px;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+.no-match-icon { font-size: 2.8rem; display: block; margin-bottom: 10px; }
+
+/* ── Manage view ─────────────────────────────────────── */
+.manage-toolbar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+#searchBox {
+  flex: 1;
+  min-width: 180px;
+  padding: 10px 16px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.9rem;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+#searchBox:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.12);
+}
+.count-label {
+  font-size: 0.85rem;
+  color: var(--muted);
+  white-space: nowrap;
+  font-weight: 600;
+  background: #f5f0ff;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+}
+
+#dinnerList { display: flex; flex-direction: column; gap: 10px; }
+
+.dinner-card {
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  border-left: 5px solid var(--primary);
+  padding: 16px 18px;
+  box-shadow: 0 2px 12px rgba(124,58,237,0.08);
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+.dinner-card:hover { box-shadow: 0 6px 20px rgba(124,58,237,0.15); transform: translateY(-1px); }
+.dinner-card:nth-child(3n+1) { border-left-color: #7c3aed; }
+.dinner-card:nth-child(3n+2) { border-left-color: #ec4899; }
+.dinner-card:nth-child(3n)   { border-left-color: #f97316; }
+.dinner-card-info { flex: 1; min-width: 0; }
+.dinner-card-name {
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--text);
+  margin-bottom: 7px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dinner-card-actions { display: flex; gap: 7px; flex-shrink: 0; padding-top: 2px; }
+
+.empty-state { text-align: center; padding: 52px 24px; color: var(--muted); }
+.empty-icon { font-size: 3.5rem; display: block; margin-bottom: 14px; }
+.empty-state h3 { font-size: 1.15rem; margin-bottom: 6px; color: var(--text); font-weight: 800; }
+.empty-state p { font-size: 0.875rem; }
+
+/* Loading spinner */
+.loading-state { text-align: center; padding: 40px; color: var(--muted); font-size: 0.95rem; }
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid #ede9fe;
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 12px;
+}
+
+/* ── Modal ───────────────────────────────────────────── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(26,10,46,0.6);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--card);
+  border-radius: 18px;
+  padding: 30px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 64px rgba(109,40,217,0.25);
+  animation: popIn 0.2s ease;
+  border-top: 5px solid;
+  border-image: linear-gradient(135deg, #7c3aed, #ec4899) 1;
+}
+.modal-title {
+  font-size: 1.2rem;
+  font-weight: 900;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, #7c3aed, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+.modal-actions .btn-primary { flex: 1; width: auto; }
+
+/* ── Footer ──────────────────────────────────────────── */
+footer {
+  text-align: center;
+  padding: 18px;
+  font-size: 0.75rem;
+  color: #9d8fb5;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <nav>
+    <button class="nav-btn active" onclick="showView('add')"    id="nav-add">Add Idea</button>
+    <button class="nav-btn"        onclick="showView('pick')"   id="nav-pick">Pick Dinner</button>
+    <button class="nav-btn"        onclick="showView('manage')" id="nav-manage">Manage Ideas</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ── ADD VIEW ───────────────────────────────────── -->
+  <section class="view active" id="view-add">
+    <div class="view-title">Add a Dinner Idea</div>
+    <div class="view-sub">Save a new meal to your family's dinner list.</div>
+
+    <div id="setupBanner">
+      <h3>⚙️ One-time Firebase setup needed</h3>
+      <ol>
+        <li>Go to <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> and create a project</li>
+        <li>Click <strong>Firestore Database</strong> → Create database → Start in <strong>test mode</strong></li>
+        <li>Go to <strong>Project Settings</strong> (gear icon) → scroll to "Your apps" → Add a <strong>Web app</strong></li>
+        <li>Copy the <code>firebaseConfig</code> object and paste it into the <code>FIREBASE CONFIG</code> section near the bottom of this file</li>
+        <li>Redeploy to GitHub Pages — data will save automatically from then on</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <form id="addForm" onsubmit="submitAdd(event)">
+
+        <div class="form-group">
+          <label class="field-label" for="dinnerName">What's the meal?</label>
+          <input type="text" id="dinnerName" placeholder="e.g. Tacos, Pasta Bake, Stir Fry…" required autocomplete="off">
+        </div>
+
+        <div class="form-group">
+          <label class="field-label">Can you make it from pantry staples?</label>
+          <div class="toggle-group">
+            <input type="radio" name="pantry" id="pantry-yes" value="yes" required>
+            <label for="pantry-yes">🥫 Yes, pantry-friendly</label>
+            <input type="radio" name="pantry" id="pantry-no" value="no">
+            <label for="pantry-no">🛒 Needs a grocery run</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="field-label">Who is this good for?</label>
+          <div class="toggle-group">
+            <input type="radio" name="who" id="who-will" value="will_kids" required>
+            <label for="who-will">👨‍👧‍👦 Will + kids</label>
+            <input type="radio" name="who" id="who-mary" value="mary_kids">
+            <label for="who-mary">👩‍👧‍👦 Mary Ellen + kids</label>
+            <input type="radio" name="who" id="who-all" value="all">
+            <label for="who-all">👨‍👩‍👧‍👦 All four of us</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="field-label">Is this a go-to or something new to try?</label>
+          <div class="toggle-group">
+            <input type="radio" name="type" id="type-goto" value="goto" required>
+            <label for="type-goto">⭐ Trusted go-to</label>
+            <input type="radio" name="type" id="type-new" value="new">
+            <label for="type-new">✨ New idea</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="field-label">How long does it take to cook?</label>
+          <div class="toggle-group">
+            <input type="radio" name="time" id="time-quick" value="quick" required>
+            <label for="time-quick">⚡ Quick (under 30 min)</label>
+            <input type="radio" name="time" id="time-slow" value="slow">
+            <label for="time-slow">🕐 Takes some time</label>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary" id="submitBtn">Save Dinner Idea</button>
+        <div class="success-toast" id="addToast">✓ Saved!</div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ── PICK VIEW ──────────────────────────────────── -->
+  <section class="view" id="view-pick">
+    <div class="view-title">What's for Dinner Tonight?</div>
+    <div class="view-sub">Set your filters and we'll suggest something from the list.</div>
+
+    <div class="filter-grid">
+      <div class="filter-block">
+        <div class="field-label">Who's eating?</div>
+        <div class="toggle-group" style="flex-direction:column; align-items:flex-start;">
+          <span><input type="radio" name="f-who" id="fw-any"  value="any"       checked><label for="fw-any">🍽️ Anyone</label></span>
+          <span><input type="radio" name="f-who" id="fw-will" value="will_kids"        ><label for="fw-will">👨‍👧‍👦 Will + kids</label></span>
+          <span><input type="radio" name="f-who" id="fw-mary" value="mary_kids"        ><label for="fw-mary">👩‍👧‍👦 Mary Ellen + kids</label></span>
+          <span><input type="radio" name="f-who" id="fw-all"  value="all"             ><label for="fw-all">👨‍👩‍👧‍👦 All four of us</label></span>
+        </div>
+      </div>
+
+      <div class="filter-block">
+        <div class="field-label">Pantry items only?</div>
+        <div class="toggle-group" style="flex-direction:column; align-items:flex-start;">
+          <span><input type="radio" name="f-pantry" id="fp-any" value="any" checked><label for="fp-any">🤷 Doesn't matter</label></span>
+          <span><input type="radio" name="f-pantry" id="fp-yes" value="yes"        ><label for="fp-yes">🥫 Pantry only</label></span>
+        </div>
+      </div>
+
+      <div class="filter-block">
+        <div class="field-label">Go-to or try something new?</div>
+        <div class="toggle-group" style="flex-direction:column; align-items:flex-start;">
+          <span><input type="radio" name="f-type" id="ft-any"  value="any"  checked><label for="ft-any">🤷 Either</label></span>
+          <span><input type="radio" name="f-type" id="ft-goto" value="goto"        ><label for="ft-goto">⭐ Go-to only</label></span>
+          <span><input type="radio" name="f-type" id="ft-new"  value="new"         ><label for="ft-new">✨ New ideas only</label></span>
+        </div>
+      </div>
+
+      <div class="filter-block">
+        <div class="field-label">How much time do we have?</div>
+        <div class="toggle-group" style="flex-direction:column; align-items:flex-start;">
+          <span><input type="radio" name="f-time" id="fti-any"   value="any"   checked><label for="fti-any">🤷 Either</label></span>
+          <span><input type="radio" name="f-time" id="fti-quick" value="quick"        ><label for="fti-quick">⚡ Quick meals</label></span>
+          <span><input type="radio" name="f-time" id="fti-slow"  value="slow"         ><label for="fti-slow">🕐 More time is fine</label></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="pick-btn-row">
+      <button class="btn-pick" onclick="pickDinner()">🎲 Suggest a Dinner</button>
+    </div>
+
+    <div class="no-match" id="noMatch">
+      <span class="no-match-icon">🤷</span>
+      No dinners match those filters.<br>Try loosening the criteria or add more ideas!
+    </div>
+
+    <div class="card" id="resultCard">
+      <div class="result-name" id="resultName"></div>
+      <div class="badge-row"  id="resultBadges"></div>
+      <div class="result-actions">
+        <button class="btn-accept"  onclick="acceptDinner()">✓ Sounds good!</button>
+        <button class="btn-another" onclick="pickDinner()">Try another →</button>
+      </div>
+    </div>
+
+    <div class="accepted-banner" id="acceptedBanner">
+      🎉 Dinner is decided!
+      <span class="accepted-name" id="acceptedName"></span>
+    </div>
+  </section>
+
+  <!-- ── MANAGE VIEW ────────────────────────────────── -->
+  <section class="view" id="view-manage">
+    <div class="view-title">Manage Dinner Ideas</div>
+    <div class="view-sub">Edit or remove ideas from your list.</div>
+
+    <div class="manage-toolbar">
+      <input type="text" id="searchBox" placeholder="Search meals…" oninput="renderList()">
+      <span class="count-label" id="countLabel"></span>
+    </div>
+
+    <div id="dinnerList">
+      <div class="loading-state"><div class="spinner"></div>Loading…</div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ── EDIT MODAL ──────────────────────────────────── -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-title">Edit Dinner Idea</div>
+    <form id="editForm" onsubmit="saveEdit(event)">
+      <input type="hidden" id="editId">
+      <div class="form-group">
+        <label class="field-label">Meal name</label>
+        <input type="text" id="editName" required autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label class="field-label">Pantry-friendly?</label>
+        <div class="toggle-group">
+          <input type="radio" name="e-pantry" id="ep-yes" value="yes"><label for="ep-yes">🥫 Yes</label>
+          <input type="radio" name="e-pantry" id="ep-no"  value="no" ><label for="ep-no">🛒 Needs groceries</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="field-label">Who is it good for?</label>
+        <div class="toggle-group">
+          <input type="radio" name="e-who" id="ew-will" value="will_kids"><label for="ew-will">👨‍👧‍👦 Will + kids</label>
+          <input type="radio" name="e-who" id="ew-mary" value="mary_kids"><label for="ew-mary">👩‍👧‍👦 Mary Ellen + kids</label>
+          <input type="radio" name="e-who" id="ew-all"  value="all"      ><label for="ew-all">👨‍👩‍👧‍👦 All four</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="field-label">Go-to or new idea?</label>
+        <div class="toggle-group">
+          <input type="radio" name="e-type" id="et-goto" value="goto"><label for="et-goto">⭐ Go-to</label>
+          <input type="radio" name="e-type" id="et-new"  value="new" ><label for="et-new">✨ New idea</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="field-label">Cook time?</label>
+        <div class="toggle-group">
+          <input type="radio" name="e-time" id="eti-quick" value="quick"><label for="eti-quick">⚡ Quick</label>
+          <input type="radio" name="e-time" id="eti-slow"  value="slow" ><label for="eti-slow">🕐 Takes time</label>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+        <button type="submit" class="btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<footer>Changes save instantly and sync across all devices.</footer>
+
+<!-- ═══════════════════════════════════════════════════════
+     FIREBASE CONFIG — paste your project's config below.
+     Get it from: Firebase Console → Project Settings →
+     Your apps → Web app → SDK setup and configuration
+     ═══════════════════════════════════════════════════════ -->
+<script type="module">
+import { initializeApp }    from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getAnalytics }     from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js';
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  query,
+  orderBy,
+  serverTimestamp,
+} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey:            "AIzaSyCs-iddzRftlez0YzJrMAvrS9xvGZfgXRc",
+  authDomain:        "dinner-cc9f9.firebaseapp.com",
+  projectId:         "dinner-cc9f9",
+  storageBucket:     "dinner-cc9f9.firebasestorage.app",
+  messagingSenderId: "297509874302",
+  appId:             "1:297509874302:web:8fded24f0de2098d16c62f",
+  measurementId:     "G-ZCVTRNE7RN",
+};
+
+const CONFIGURED = true;
+
+if (!CONFIGURED) {
+  document.getElementById('setupBanner').style.display = 'block';
+}
+
+// ── Firebase init ─────────────────────────────────────
+let db, dinnersRef;
+if (CONFIGURED) {
+  const app = initializeApp(firebaseConfig);
+  getAnalytics(app);
+  db = getFirestore(app);
+  dinnersRef = collection(db, 'dinners');
+}
+
+// ── Cached data (kept fresh by onSnapshot) ────────────
+let allDinners = [];
+
+if (CONFIGURED) {
+  const q = query(dinnersRef, orderBy('added', 'desc'));
+  onSnapshot(q, snap => {
+    allDinners = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderList();
+  }, err => {
+    console.error('Firestore:', err);
+  });
+}
+
+// ── Labels ────────────────────────────────────────────
+const WHO_LABEL  = { will_kids: '👨‍👧‍👦 Will + kids', mary_kids: '👩‍👧‍👦 Mary Ellen + kids', all: '👨‍👩‍👧‍👦 All four' };
+const TYPE_LABEL = { goto: '⭐ Go-to', new: '✨ New idea' };
+const TIME_LABEL = { quick: '⚡ Quick', slow: '🕐 Takes time' };
+
+function badgesFor(d) {
+  return [
+    d.pantry === 'yes' ? ['badge-green', '🥫 Pantry-friendly'] : null,
+    ['badge-blue',   WHO_LABEL[d.who]   || d.who],
+    ['badge-purple', TYPE_LABEL[d.type] || d.type],
+    ['badge-amber',  TIME_LABEL[d.time] || d.time],
+  ].filter(Boolean);
+}
+
+// ── Navigation ────────────────────────────────────────
+window.showView = function(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+  if (name === 'pick') resetPicker();
+};
+
+// ── Add form ──────────────────────────────────────────
+window.submitAdd = async function(e) {
+  e.preventDefault();
+  if (!CONFIGURED) return;
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  const f = e.target;
+  try {
+    await addDoc(dinnersRef, {
+      name:   f.querySelector('#dinnerName').value.trim(),
+      pantry: f.querySelector('input[name="pantry"]:checked').value,
+      who:    f.querySelector('input[name="who"]:checked').value,
+      type:   f.querySelector('input[name="type"]:checked').value,
+      time:   f.querySelector('input[name="time"]:checked').value,
+      added:  serverTimestamp(),
+    });
+    f.reset();
+    const toast = document.getElementById('addToast');
+    toast.style.display = 'block';
+    setTimeout(() => toast.style.display = 'none', 2000);
+  } catch(err) {
+    alert('Save failed: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save Dinner Idea';
+  }
+};
+
+// ── Picker ────────────────────────────────────────────
+let pickerSeen = new Set();
+
+function resetPicker() {
+  document.getElementById('resultCard').style.display    = 'none';
+  document.getElementById('acceptedBanner').style.display = 'none';
+  document.getElementById('noMatch').style.display       = 'none';
+  pickerSeen = new Set();
+}
+
+function getFilters() {
+  return {
+    who:    document.querySelector('input[name="f-who"]:checked').value,
+    pantry: document.querySelector('input[name="f-pantry"]:checked').value,
+    type:   document.querySelector('input[name="f-type"]:checked').value,
+    time:   document.querySelector('input[name="f-time"]:checked').value,
+  };
+}
+
+function matchesFilters(d, f) {
+  if (f.who !== 'any') {
+    if (f.who === 'all'       && d.who !== 'all')                             return false;
+    if (f.who === 'will_kids' && d.who !== 'will_kids' && d.who !== 'all')   return false;
+    if (f.who === 'mary_kids' && d.who !== 'mary_kids' && d.who !== 'all')   return false;
+  }
+  if (f.pantry !== 'any' && d.pantry !== f.pantry) return false;
+  if (f.type   !== 'any' && d.type   !== f.type)   return false;
+  if (f.time   !== 'any' && d.time   !== f.time)   return false;
+  return true;
+}
+
+window.pickDinner = function() {
+  document.getElementById('acceptedBanner').style.display = 'none';
+
+  const f    = getFilters();
+  const pool = allDinners.filter(d => matchesFilters(d, f));
+
+  if (pool.length === 0) {
+    document.getElementById('resultCard').style.display = 'none';
+    document.getElementById('noMatch').style.display    = 'block';
+    return;
+  }
+  document.getElementById('noMatch').style.display = 'none';
+
+  let unseen = pool.filter(d => !pickerSeen.has(d.id));
+  if (unseen.length === 0) { pickerSeen = new Set(); unseen = pool; }
+
+  const pick = unseen[Math.floor(Math.random() * unseen.length)];
+  pickerSeen.add(pick.id);
+
+  document.getElementById('resultName').textContent = pick.name;
+  const badgesEl = document.getElementById('resultBadges');
+  badgesEl.innerHTML = '';
+  badgesFor(pick).forEach(([cls, text]) => {
+    const b = document.createElement('span');
+    b.className = 'badge ' + cls;
+    b.textContent = text;
+    badgesEl.appendChild(b);
+  });
+
+  const card = document.getElementById('resultCard');
+  card.style.display       = 'block';
+  card.dataset.currentId   = pick.id;
+  card.dataset.currentName = pick.name;
+};
+
+window.acceptDinner = function() {
+  const name = document.getElementById('resultCard').dataset.currentName;
+  document.getElementById('resultCard').style.display = 'none';
+  document.getElementById('acceptedName').textContent = name;
+  document.getElementById('acceptedBanner').style.display = 'block';
+};
+
+// ── Manage list ───────────────────────────────────────
+window.renderList = function() {
+  const query = (document.getElementById('searchBox').value || '').toLowerCase();
+  const data  = allDinners.filter(d => d.name && d.name.toLowerCase().includes(query));
+
+  document.getElementById('countLabel').textContent =
+    data.length + ' idea' + (data.length !== 1 ? 's' : '');
+
+  const list = document.getElementById('dinnerList');
+
+  if (!CONFIGURED) {
+    list.innerHTML = `<div class="empty-state"><span class="empty-icon">⚙️</span><h3>Firebase not configured</h3><p>See the setup instructions on the Add Idea tab.</p></div>`;
+    return;
+  }
+
+  if (data.length === 0) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <span class="empty-icon">${query ? '🔍' : '🍴'}</span>
+        <h3>${query ? 'No results for "' + escHtml(query) + '"' : 'No dinner ideas yet'}</h3>
+        <p>${query ? 'Try a different search term.' : 'Go to Add Idea to get started!'}</p>
+      </div>`;
+    return;
+  }
+
+  list.innerHTML = '';
+  data.forEach(d => {
+    const card = document.createElement('div');
+    card.className = 'dinner-card';
+    const badges = badgesFor(d).map(([cls, t]) => `<span class="badge ${cls}">${t}</span>`).join('');
+    card.innerHTML = `
+      <div class="dinner-card-info">
+        <div class="dinner-card-name">${escHtml(d.name)}</div>
+        <div class="badge-row">${badges}</div>
+      </div>
+      <div class="dinner-card-actions">
+        <button class="btn-ghost"  data-edit="${d.id}">Edit</button>
+        <button class="btn-danger" data-del="${d.id}">Delete</button>
+      </div>`;
+    list.appendChild(card);
+  });
+
+  list.querySelectorAll('[data-edit]').forEach(btn =>
+    btn.addEventListener('click', () => openEdit(btn.dataset.edit)));
+  list.querySelectorAll('[data-del]').forEach(btn =>
+    btn.addEventListener('click', () => deleteDinner(btn.dataset.del)));
+};
+
+window.deleteDinner = async function(id) {
+  if (!confirm('Remove this dinner idea?')) return;
+  try {
+    await deleteDoc(doc(db, 'dinners', id));
+  } catch(err) {
+    alert('Delete failed: ' + err.message);
+  }
+};
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Edit modal ────────────────────────────────────────
+function openEdit(id) {
+  const d = allDinners.find(x => x.id === id);
+  if (!d) return;
+  document.getElementById('editId').value   = d.id;
+  document.getElementById('editName').value = d.name;
+  document.querySelector(`input[name="e-pantry"][value="${d.pantry}"]`).checked = true;
+  document.querySelector(`input[name="e-who"][value="${d.who}"]`).checked       = true;
+  document.querySelector(`input[name="e-type"][value="${d.type}"]`).checked     = true;
+  document.querySelector(`input[name="e-time"][value="${d.time}"]`).checked     = true;
+  document.getElementById('editModal').classList.add('open');
+}
+
+window.closeModal = function() {
+  document.getElementById('editModal').classList.remove('open');
+};
+
+window.saveEdit = async function(e) {
+  e.preventDefault();
+  const id = document.getElementById('editId').value;
+  try {
+    await updateDoc(doc(db, 'dinners', id), {
+      name:   document.getElementById('editName').value.trim(),
+      pantry: document.querySelector('input[name="e-pantry"]:checked').value,
+      who:    document.querySelector('input[name="e-who"]:checked').value,
+      type:   document.querySelector('input[name="e-type"]:checked').value,
+      time:   document.querySelector('input[name="e-time"]:checked').value,
+    });
+    closeModal();
+  } catch(err) {
+    alert('Save failed: ' + err.message);
+  }
+};
+
+document.getElementById('editModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ── Initial render ────────────────────────────────────
+renderList();
+</script>
+</body>
+</html>
